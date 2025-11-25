@@ -93,4 +93,3 @@ def getDownloads(mod: str, ver: str, loader: str):
         print(f"An HTTPS Error occured! Error Code: {request.status_code}")
         print(f"The URL was {url}")
 
-getDownloads(input("Enter a mod name:"), "1.21.10",  "fabric")
