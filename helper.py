@@ -7,6 +7,7 @@ from typing import Dict, List
 
 MODRINTH = "https://api.modrinth.com/v2"
 
+# Dictionaries containing every version of Minecraft supported by Fabric, Forge, NeoForge, and Quilt
 
 fabricVersions: Dict[str, List[str]] = {
     "1.14": ["1.14", "1.14.1", "1.14.2", "1.14.3", "1.14.4"],
@@ -45,42 +46,17 @@ quiltVersions:  Dict[str, List[str]] = {
     "1.21": ['1.21', '1.21.1', '1.21.2', '1.21.3', '1.21.4', '1.21.5', '1.21.6', '1.21.7', '1.21.8', '1.21.9', '1.21.10']
 }
 
-def findUser() -> str:
-    """
-    Simple platform-independant function to identify the name of the user,
-    first, by running whoami, with two fallbacks:
-    1) Use the current directory to try to identify the username.
-    2) Directly prompt the user.
-    """
-
-    # Whoami
-    user = run(["whoami"], capture_output=True, text=True)
-    if user.returncode == 0:
-        return user.stdout.strip()
-    
-    # Directory splitting to identify the user (Fallback 1)
-    currentDir = path.abspath("./")
-    if currentDir.startswith("/home/"):
-        currentDir = currentDir.removeprefix("/home/")
-        user = currentDir.split('/')[0]
-        return user
-    
-    if currentDir.startswith("C:\\Users\\"):
-        currentDir = currentDir.removeprefix("C:\\Users\\")
-        user = currentDir.split("\\")[0]
-        return user
-
-    # Prompt user for the username (FINAL FALLBACK)
-
-    return input("Could not find your username, enter it manually: ").lower().strip()
-
 def constructURL(mod: str, ver: str, loader: str) -> str:
     """
-    Simple function to construct the Modrinth URL using the mod name, version, and the loader
+    Simple function to construct the Modrinth URL using the mod name, version, and the loader.
     """
     return f"{MODRINTH}/project/{mod}/version?game_versions=[\"{ver}\"]&loaders=[\"{loader}\"]"
 
-def getDownloads(mod: str, ver: str, loader: str) -> set:
+def getDownloadURLs(mod: str, ver: str, loader: str) -> set | int:
+    """
+    Function to obtain a set consisting of the download links of the specified mod and it's dependencies.
+    Returns the set of download links on success and returns the HTTP Error code on failiure
+    """
     try:
         mods = deque([mod])
         urls = set()
@@ -104,8 +80,29 @@ def getDownloads(mod: str, ver: str, loader: str) -> set:
     
 
     except HTTPError:
-        print(f"An HTTPS Error occured! Error Code: {request.status_code}")
+        print(f"An HTTP Error occured while searching for the mod! Error Code: {request.status_code}")
         print(f"The URL was {url}")
+        return request.status_code
 
-def pullMods(urls: list) -> None:
-    pass
+def pullMods(urls: list[str], dest: str) -> int:
+    """
+    Function to download the mods to the given destination and return:
+    0: On a successful download
+    -1: On an IO Error
+    An HTTP Error code: On an HTTP Error
+    """
+    try:
+        for url in urls:
+            file = get(url)
+            file.raise_for_status()
+            filename = url.split('/')[-1].split('-')[0].capitalize() + ".jar"
+            with open(path.join(dest, filename), 'w') as modFile:
+                modFile.write(file.content)
+        return 0
+    except HTTPError:
+        print(f"An HTTP Error occured while downloading the mod {filename.removesuffix(".jar")}! Error Code: {file.status_code}")
+        print(f"The URL was {url}")
+        return file.status_code
+    except IOError:
+        print(f"An IO Error occured while downloading the mod {filename.removesuffix(".jar")}!")
+        return -1
