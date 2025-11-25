@@ -1,7 +1,7 @@
 from requests import get, HTTPError
 from json import loads
 from collections import deque
-from os import path
+from os.path import join
 from typing import Dict, List
 
 MODRINTH = "https://api.modrinth.com/v2"
@@ -95,7 +95,7 @@ def pullMods(urls: list[str], dest: str) -> int:
             file = get(url)
             file.raise_for_status()
             filename = url.split('/')[-1].split('-')[0].capitalize() + ".jar"
-            with open(path.join(dest, filename), 'w') as modFile:
+            with open(join(dest, filename), 'w') as modFile:
                 modFile.write(file.content)
         return 0
     except HTTPError:
