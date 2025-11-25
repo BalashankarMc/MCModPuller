@@ -1,6 +1,5 @@
 from requests import get, HTTPError
 from json import loads
-from subprocess import run
 from collections import deque
 from os import path
 from typing import Dict, List
