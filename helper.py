@@ -18,7 +18,7 @@ fabricVersions: Dict[str, List[str]] = {
     "1.20": ["1.20", "1.20.1", "1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6"],
     "1.21": ["1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10"]
 }
-forgeVersions: Dict[str, List[str]] = {
+forgeVersions:  Dict[str, List[str]] = {
     "1.1":  ["1.1"], "1.2":  ["1.2.3", "1.2.4", "1.2.5"], "1.3":  ["1.3.2"],
     "1.4":  ['1.4', '1.4.1', '1.4.2', '1.4.3', '1.4.4', '1.4.5', '1.4.6', '1.4.7'],
     "1.5":  ['1.5', '1.5.1', '1.5.2'], "1.6":  ['1.6.1', '1.6.2', '1.6.3', '1.6.4'],
@@ -32,11 +32,11 @@ forgeVersions: Dict[str, List[str]] = {
     "1.20": ['1.20', '1.20.1', '1.20.2', '1.20.3', '1.20.4', '1.20.5', '1.20.6'],
     "1.21": ['1.21', '1.21.1', '1.21.2', '1.21.3', '1.21.4', '1.21.5', '1.21.6', '1.21.7', '1.21.8', '1.21.9']
 }
-neoVersions: Dict[str, List[str]] = {
+neoVersions:    Dict[str, List[str]] = {
     "1.20": ['1.20.1', '1.20.2', '1.20.3', '1.20.4', '1.20.5', '1.20.6'],
     "1.21": ['1.21', '1.21.1', '1.21.2', '1.21.3', '1.21.4', '1.21.5', '1.21.6', '1.21.7', '1.21.8', '1.21.9', '1.21.10']
 }
-quiltVersions: Dict[str, List[str]] = {
+quiltVersions:  Dict[str, List[str]] = {
     "1.14": ['1.14.4'], "1.15": ['1.15', '1.15.1', '1.15.2'],
     "1.16": ['1.16.1', '1.16.2', '1.16.3', '1.16.4', '1.16.5'],
     "1.17": ['1.17', '1.17.1'], "1.18": ['1.18', '1.18.1', '1.18.2'],
@@ -46,10 +46,19 @@ quiltVersions: Dict[str, List[str]] = {
 }
 
 def findUser() -> str:
+    """
+    Simple platform-independant function to identify the name of the user,
+    first, by running whoami, with two fallbacks:
+    1) Use the current directory to try to identify the username.
+    2) Directly prompt the user.
+    """
+
+    # Whoami
     user = run(["whoami"], capture_output=True, text=True)
     if user.returncode == 0:
         return user.stdout.strip()
     
+    # Directory splitting to identify the user (Fallback 1)
     currentDir = path.abspath("./")
     if currentDir.startswith("/home/"):
         currentDir = currentDir.removeprefix("/home/")
@@ -61,12 +70,17 @@ def findUser() -> str:
         user = currentDir.split("\\")[0]
         return user
 
+    # Prompt user for the username (FINAL FALLBACK)
+
     return input("Could not find your username, enter it manually: ").lower().strip()
 
-def constructURL(mod: str, ver: str, loader: str):
+def constructURL(mod: str, ver: str, loader: str) -> str:
+    """
+    Simple function to construct the Modrinth URL using the mod name, version, and the loader
+    """
     return f"{MODRINTH}/project/{mod}/version?game_versions=[\"{ver}\"]&loaders=[\"{loader}\"]"
 
-def getDownloads(mod: str, ver: str, loader: str):
+def getDownloads(mod: str, ver: str, loader: str) -> set:
     try:
         mods = deque([mod])
         urls = set()
@@ -93,3 +107,5 @@ def getDownloads(mod: str, ver: str, loader: str):
         print(f"An HTTPS Error occured! Error Code: {request.status_code}")
         print(f"The URL was {url}")
 
+def pullMods(urls: list) -> None:
+    pass
