@@ -2,7 +2,7 @@ from requests import get, HTTPError
 from json import loads
 from collections import deque
 from os.path import join
-from typing import Dict, List
+from typing import Dict, List, Set
 
 MODRINTH = "https://api.modrinth.com/v2"
 
@@ -51,7 +51,7 @@ def constructURL(mod: str, ver: str, loader: str) -> str:
     """
     return f"{MODRINTH}/project/{mod}/version?game_versions=[\"{ver}\"]&loaders=[\"{loader}\"]"
 
-def getDownloadURLs(mod: str, ver: str, loader: str) -> set | int:
+def getDownloadURLs(mod: str, ver: str, loader: str) -> Set | int:
     """
     Function to obtain a set consisting of the download links of the specified mod and it's dependencies.
     Returns the set of download links on success and returns the HTTP Error code on failiure
@@ -83,7 +83,7 @@ def getDownloadURLs(mod: str, ver: str, loader: str) -> set | int:
         print(f"The URL was {url}")
         return request.status_code
 
-def pullMods(urls: list[str], dest: str) -> int:
+def pullMods(urls: List[str], dest: str) -> int:
     """
     Function to download the mods to the given destination and return:
     0: On a successful download
