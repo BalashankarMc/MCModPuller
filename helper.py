@@ -67,9 +67,11 @@ def getDownloadURLs(mod: str, ver: str, loader: str) -> Set | int:
             processedMods.add(current)
             print(current)
             url = constructURL(current, ver, loader)
+            print(url)
             request = get(url)
             request.raise_for_status()
             modInfo = loads(request.content.decode())
+            print(modInfo)   
             dependencies = modInfo[0]["dependencies"]
             downloadLink = modInfo[0]["files"][0]["url"]
             urls.add(downloadLink)
@@ -95,7 +97,7 @@ def pullMods(urls: List[str], dest: str) -> int:
             file = get(url)
             file.raise_for_status()
             filename = url.split('/')[-1].split('-')[0].capitalize() + ".jar"
-            with open(join(dest, filename), 'w') as modFile:
+            with open(join(dest, filename), 'wb') as modFile:
                 modFile.write(file.content)
         return 0
     except HTTPError:
